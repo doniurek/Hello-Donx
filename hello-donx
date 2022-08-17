@@ -1,3 +1,22 @@
 #!/usr/bin/env node
 
-console.log('Hello, Donx!');
+function getCurrentDate() {
+    const currentDate = new Date();
+    const options = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    };
+    
+    return currentDate.toLocaleString("default", options);
+}
+
+function getMessage() {
+    return (
+        "Hello, Donx!\n" +
+        "Today it's " + getCurrentDate()
+    );
+}
+
+console.log(getMessage());
