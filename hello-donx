@@ -1,22 +1,56 @@
 #!/usr/bin/env node
 
+const { get } = require("https");
+
+function promisifiedGet(url) {
+  return new Promise((resolve, reject) => {
+    get(url, (response) => {
+      let chunks_of_data = [];
+
+      response.on('data', (fragments) => {
+        chunks_of_data.push(fragments);
+      });
+
+      response.on('end', () => {
+        let response_body = Buffer.concat(chunks_of_data);
+        resolve(response_body.toString());
+      });
+
+      response.on('error', (error) => {
+        reject(error);
+      });
+    });
+  });
+}
+
 function getCurrentDate() {
-    const currentDate = new Date();
-    const options = {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-    };
-    
-    return currentDate.toLocaleString("default", options);
+  const currentDate = new Date();
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  };
+  
+  return currentDate.toLocaleString("default", options);
 }
 
 function getMessage() {
-    return (
-        "Hello, Donx!\n" +
-        "Today it's " + getCurrentDate()
-    );
+  return (
+    "Hello, Donx!\n" +
+    "Today it's " + getCurrentDate()
+  );
 }
 
-console.log(getMessage());
+async function getWeatherInfo() {
+  const url = 'https://wttr.in?format=3'
+  return promisifiedGet(url)
+}
+
+async function main() {
+  console.log(getMessage());
+  console.log(`\n`+ "Weather forecast:");
+  console.log(await getWeatherInfo());
+}
+
+main();
