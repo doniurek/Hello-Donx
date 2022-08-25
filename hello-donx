@@ -2,9 +2,9 @@
 
 const { get } = require("https");
 
-function promisifiedGet(url) {
+function promisifiedGet(url, headers={}) {
   return new Promise((resolve, reject) => {
-    get(url, (response) => {
+    get(url, {headers: headers}, (response) => {
       let chunks_of_data = [];
 
       response.on('data', (fragments) => {
@@ -23,6 +23,17 @@ function promisifiedGet(url) {
   });
 }
 
+function getRandomInt(max, min=0) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
+function getMessage() {
+  return (
+    "Hello, Donx!\n\n" +
+    "Today it's " + getCurrentDate()
+  );
+}
+
 function getCurrentDate() {
   const currentDate = new Date();
   const options = {
@@ -35,22 +46,53 @@ function getCurrentDate() {
   return currentDate.toLocaleString("default", options);
 }
 
-function getMessage() {
-  return (
-    "Hello, Donx!\n" +
-    "Today it's " + getCurrentDate()
-  );
-}
-
 async function getWeatherInfo() {
   const url = 'https://wttr.in?format=3'
+
   return promisifiedGet(url)
+}
+
+async function getSongOfTheDay() {
+  const year = getRandomYear()
+  const offset = await getRandomSongOffset(year)
+
+  const musicBrainzSongData = await getMusicBrainzRecordingData(year, offset)
+  
+  const songTitle = musicBrainzSongData.recordings[0].title
+  const artist = musicBrainzSongData.recordings[0]['artist-credit'][0].name //nice to have: support for multiple artists
+
+  return `"${songTitle}" by ${artist}`; //nice to have: get release
+}
+
+function getRandomYear() {
+  const currentYear = new Date().getFullYear()
+
+  return getRandomInt(currentYear, currentYear-100)
+}
+
+async function getRandomSongOffset(year) {
+  const musicBrainzRecordingData = await getMusicBrainzRecordingData(year, 0)
+  
+  const count = musicBrainzRecordingData.count
+  const offset = getRandomInt(Math.min(count, 100000))
+
+  return offset
+}
+
+async function getMusicBrainzRecordingData(year, offset) {
+  const url = `https://musicbrainz.org/ws/2/recording?query=firstreleasedate:${year}&limit=1&offset=${offset}&fmt=json`
+  const headers = {'user-agent': 'Hello-Donx/1.0 github.com/doniurek'}
+  const json = JSON.parse(await promisifiedGet(url, headers))
+
+  return json
 }
 
 async function main() {
   console.log(getMessage());
   console.log(`\n`+ "Weather forecast:");
   console.log(await getWeatherInfo());
+  console.log(`\n`+ "Song of the day:");
+  console.log(await getSongOfTheDay());
 }
 
 main();
