@@ -71,6 +71,7 @@ function getRandomYear() {
 }
 
 async function getRandomSongOffset(year) {
+  //due to MusicBrainz database limitations (large offsets are not returned) an offset have to be strongly delimited
   const musicBrainzRecordingData = await getMusicBrainzRecordingData(year, 0)
   
   const count = musicBrainzRecordingData.count
