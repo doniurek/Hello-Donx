@@ -2,6 +2,12 @@
 
 const { get } = require("https");
 
+const CURRENCIES_API_BASE_URL = 'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/'
+const SONGS_API_BASE_URL = 'https://musicbrainz.org/ws/2/recording?query=limit=1&fmt=json&'
+const NEWS_URL = 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'
+const WEATHER_URL = 'https://wttr.in?format=3'
+
+
 function promisifiedGet(url, headers={}) {
   return new Promise((resolve, reject) => {
     get(url, {headers: headers}, (response) => {
@@ -47,9 +53,7 @@ function getCurrentDate() {
 }
 
 async function getWeatherInfo() {
-  const url = 'https://wttr.in?format=3'
-
-  return promisifiedGet(url)
+  return promisifiedGet(WEATHER_URL)
 }
 
 async function getSongOfTheDay() {
@@ -81,7 +85,7 @@ async function getRandomSongOffset(year) {
 }
 
 async function getMusicBrainzRecordingData(year, offset) {
-  const url = `https://musicbrainz.org/ws/2/recording?query=firstreleasedate:${year}&limit=1&offset=${offset}&fmt=json`
+  const url = `${SONGS_API_BASE_URL}firstreleasedate:${year}&offset=${offset}`
   const headers = {'user-agent': 'Hello-Donx/1.0 github.com/doniurek'}
   const json = JSON.parse(await promisifiedGet(url, headers))
 
@@ -99,8 +103,7 @@ function getTagContent(data, tagName) {
 }
 
 async function getMostPopularNews() {
-  const url = 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'
-  const xml = await promisifiedGet(url)
+  const xml = await promisifiedGet(NEWS_URL)
   const xmlString = xml.toString()
 
   const item = getTagContent(xmlString, 'item')
@@ -112,6 +115,22 @@ async function getMostPopularNews() {
   return [title, description, `Read more at: ${newsUrl}`].join("\n")
 }
 
+async function getCurrencyRates(baseCurrency, checkedCurrency) {
+  const url = 
+    `${CURRENCIES_API_BASE_URL}${baseCurrency}/${checkedCurrency}.json`
+
+  const rate = JSON.parse(await promisifiedGet(url))[checkedCurrency]
+  const roundedRate = Number(rate).toFixed(2)
+
+  const formatedBaseCurrency = baseCurrency.toUpperCase()
+  const formatedCheckedCurrency = checkedCurrency.toUpperCase()
+
+  const message =
+    `1 ${formatedBaseCurrency} is ${roundedRate} ${formatedCheckedCurrency}`
+
+  return message
+}
+
 async function main() {
   console.log(getMessage());
   console.log(`\n`+ "Weather forecast:");
@@ -120,6 +139,10 @@ async function main() {
   console.log(await getSongOfTheDay());
   console.log(`\n`+ "News of the day:");
   console.log(await getMostPopularNews());
+  console.log(`\n` + "Todays currency rates:");
+  console.log(await getCurrencyRates("eur", "pln"));
+  console.log(await getCurrencyRates("usd", "pln"));
+  console.log(await getCurrencyRates("btc", "pln"));
 }
 
 main();
