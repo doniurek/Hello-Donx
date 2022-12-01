@@ -7,15 +7,26 @@ const SONGS_API_BASE_URL = 'https://musicbrainz.org/ws/2/recording?query=limit=1
 const NEWS_URL = 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'
 const WEATHER_URL = 'https://wttr.in?format=3'
 
-const EXERCISES = [
-  '10 lunges for each leg',
-  '5 pushups',
-  '20 squats',
-  '30 bicycle crunches',
-  '10 crunches',
-  '20 jumping racks',
-  '1 minute plank'
-]
+// const EXERCISES = [
+//   '10 lunges for each leg',
+//   '5 pushups',
+//   '20 squats',
+//   '30 bicycle crunches',
+//   '10 crunches',
+//   '20 jumping racks',
+//   '1 minute plank'
+// ]
+
+const EXERCISES = {
+  'lunges for each leg': 10,
+  'pushups': 5,
+  'squats': 20,
+  'bicycle crunches': 20,
+  'crunches': 10,
+  'jumping racks': 20,
+  'plank (in minutes)': 1
+}
+
 
 function promisifiedGet(url, headers={}) {
   return new Promise((resolve, reject) => {
@@ -140,8 +151,34 @@ async function getCurrencyRates(baseCurrency, checkedCurrency) {
   return message
 }
 
-async function getRandomExercise() {
-  return EXERCISES[getRandomInt(EXERCISES.length-1)]
+function isHardcore() {
+  return Math.random() <= 0.25 // const configuracyjny
+}
+
+function getRandomExercises() {
+  let availableExercises = Object.keys(EXERCISES)
+
+  let exercises = []
+  let isHardcoreDay = isHardcore()
+  let numberOfExercises = isHardcoreDay ? 3 : 2
+
+  for (let i = 0; i < numberOfExercises; i++) {
+    let exerciseIndex = getRandomInt(availableExercises.length-1)
+    let exercise = availableExercises.splice(exerciseIndex, 1)[0]
+    exercises.push(exercise)
+  }
+
+  return getExercisesMessage(exercises, isHardcoreDay)
+}
+
+function getExercisesMessage(exercises, isHardcoreDay) {
+  return exercises.reduce(
+    function (message, exercise) {
+      let reps = EXERCISES[exercise] * (isHardcoreDay ? 2 : 1)
+      return message + `${reps} ${exercise}\n`
+    },
+    ""
+  )
 }
 
 async function main() {
@@ -156,8 +193,8 @@ async function main() {
   console.log(await getCurrencyRates("eur", "pln"));
   console.log(await getCurrencyRates("usd", "pln"));
   console.log(await getCurrencyRates("btc", "pln"));
-  console.log(`\n` + "Let's warm up a bit! Here's an exercise for you:");
-  console.log(await getRandomExercise());
+  console.log(`\n` + "Let's warm up a bit! Here are some exercises for you:");
+  console.log(await getRandomExercises());
 }
 
 main();
