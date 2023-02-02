@@ -55,7 +55,7 @@ function getRandomInt(max, min=0) {
 
 function getMessage() {
   return (
-    "Hello, Donx!\n\n" +
+    "\x1b[1m\x1b[36mHello, Donx!\x1b[0m\n\n" +
     "Today it's " + getCurrentDate()
   );
 }
@@ -132,7 +132,7 @@ async function getMostPopularNews() {
   const description = getTagContent(item, 'description')
   const newsUrl = getTagContent(item, 'link')
 
-  return [title, description, `Read more at: ${newsUrl}`].join("\n")
+  return [title, description, `Read more at: \x1b[4m${newsUrl}\x1b[0m`].join("\n")
 }
 
 async function getCurrencyRates(baseCurrency, checkedCurrency) {
@@ -183,17 +183,17 @@ function getExercisesMessage(exercises, isHardcoreDay) {
 
 async function main() {
   console.log(getMessage());
-  console.log(`\n`+ "Weather forecast:");
+  console.log(`\n`+ "\x1b[36mWeather forecast:\x1B[39m");
   console.log(await getWeatherInfo());
-  console.log(`\n`+ "Song of the day:");
+  console.log(`\n`+ "\x1b[36mSong of the day:\x1B[39m");
   console.log(await getSongOfTheDay());
-  console.log(`\n`+ "News of the day:");
+  console.log(`\n`+ "\x1b[36mNews of the day:\x1B[39m");
   console.log(await getMostPopularNews());
-  console.log(`\n` + "Todays currency rates:");
+  console.log(`\n` + "\x1b[36mTodays currency rates:\x1B[39m");
   console.log(await getCurrencyRates("eur", "pln"));
   console.log(await getCurrencyRates("usd", "pln"));
   console.log(await getCurrencyRates("btc", "pln"));
-  console.log(`\n` + "Let's warm up a bit! Here are some exercises for you:");
+  console.log(`\n` + "\x1b[36mLet's warm up a bit! Here are some exercises for you:\x1B[39m");
   console.log(await getRandomExercises());
 }
 
